@@ -2,24 +2,24 @@
 様々なホームの作成、削除、テレポートが可能なシンプルなホームプラグインです。プレイヤーがホームを設定することを制限されるワールドのブラックリストをコントロールする機能があります。設定ファイルで、ホームの最大数、テレポートのクールダウン、テレポートの遅延、およびユーザーに表示されるそれぞれのメッセージなどの設定を制御することができます。
 
 # Installation
-Simply place the downloaded jar into your server plugins folder.
-**NOTE! For "MAX HOMES" to work you must meet one of the soft dependencies below, and setup groups for the respective permissions plugin. You will then also need to setup max-homes in the config.yml. An example max-homes setup can be found below the default config**
+ダウンロードしたjarファイルをサーバーのpluginsフォルダに入れるだけです。
+**注意！"MAX HOMES "が動作するためには、以下のソフト依存のいずれかを満たし、それぞれのパーミッションプラグインのグループを設定する必要があります。また、config.ymlでmax-homesを設定する必要があります。max-homesのセットアップの例は、デフォルトのコンフィグ設定にあります。
 
 # Soft Dependencies
 - [LuckPerms](https://luckperms.net/download)
-- [Vault plugin](https://dev.bukkit.org/projects/vault), as well as, a permissions plugin supported by Vault
+- [Vault plugin](https://dev.bukkit.org/projects/vault)、と同様に、Vaultでサポートされているパーミッションプラグインです。
 
 # Commands
-- **/sethome [HomeName] [HomeDescription]** - This command will allow the issuer to set a home with a given name and description of their choosing at your standing location. If no name and description are given then you will set a default home at your standing location.
-- **/home [HomeName]** - This command will teleport the user to the given "HomeName". If no home name is given then the user is teleported to their default set by **/sethome**
-- **/home-of [PlayerName] [HomeName]** - This command will allow players with the "homes.home-of" permission to teleport to any players set home. If no home name is provided it will assume the default home as the desired destination.
-- **/delhome [HomeName]** - This command will delete the home at the given home name. If no home name is given then it will attempt to remove the default home.
-- **/delhome-of [PlayerName] [HomeName]** - This command will allow players with the "homes.delhome-of" permission to delete any players set home. If no home name is given it will assume the default home as the home desired for deletion.
-- **/uhome [HomeName] [HomeDescription]** - This command will allow players with the "homes.uhome-of" permission to update a home for any player. If no home name is supplied then it will update the supplied players default home.
-- **/uhome-of [PlayerName] [HomeName]** - This command will list all of the players currently set homes if there are any. Players with the "home.gethomes" permission can use the extra PlayerName parameter to list the homes of a specific player.
-- **/homes [PlayerName]** - This command will list all of the players currently set homes if there are any. Players with the "home.gethomes" permission can use the extra PlayerName parameter to list the homes of a specific player.
-- **/blacklist [Add/Remove] [WorldName]** - This command is used to manipulate the world blacklist. If a worlds name is in the blacklist then no players will be allowed to set homes in that world. Type /blacklist to list all worlds in the blacklist
-- **/setmax [GroupName] [Amount]** - This command will allow players with the "homes.setmax" permission to set a maximum number of allowed homes for a specific permission group. For example if you wanted to only allow the default permission group 4 homes you execute the command, "/setmax default 4".
+- **/sethome [ホーム名] [ホームの説明]** - このコマンドは、プレイヤーが選んだ名前と説明を持つホームを、プレイヤーの立っている場所に設定することを可能にします。名前と説明が与えられていない場合、あなたの立っている場所にデフォルトのホームが設定されます。
+- **/home [ホームの名前]** - このコマンドは、ユーザーが選択した[ホームの名前]にテレポートさせます。ホーム名が選択されていない場合、**/sethome**で設定されたデフォルトのホームにテレポートされます。
+- **/home-of [プレイヤー名] [ホーム名]** - このコマンドは、「homes.home-of」という権限があるプレイヤーが、任意のプレイヤーの設定したホームにテレポートすることを許可します。ホーム名が提供されない場合、希望する目的地としてデフォルトのホームにテレポートされます。
+- **/delhome [ホーム名]** - このコマンドは、選択されたホームを削除します。ホーム名が選択されていない場合は、デフォルトのホームを削除します。
+- **/delhome-of [PlayerName] [HomeName]** - このコマンドは、「homes.delhome-of」という権限があるプレイヤーが、選択したプレイヤーが設定したホームを削除することを許可します。ホーム名が選択されていない場合、削除したいホームとしてデフォルトのホームを削除します。
+- **/uhome [HomeName] [HomeDescription]** - このコマンドは、「homes.uhome-of」という権限があるプレイヤーが、任意のプレイヤーのホームを更新することを許可します。ホーム名が選択されない場合、選択したプレイヤーのデフォルトのホームを更新します。
+- **/uhome-of [PlayerName] [HomeName]** - このコマンドは、現在設定されているホームがある場合、すべてのプレイヤーをリストアップします。「home.gethomes」という権限があるプレイヤーは、PlayerNameパラメータを使用して、特定のプレイヤーのホームをリストアップすることができます。
+- **/homes [PlayerName]** - このコマンドは、現在設定されているホームがある場合、すべてのプレーヤーをリストアップします。「home.gethomes」という権限があるプレイヤーは、PlayerNameパラメータを使用して、特定のプレイヤーのホームをリストアップすることができます。
+- **/blacklist [Add/Remove] [WorldName]** - このコマンドは、ワールドのブラックリストを操作するために使用されます。もしワールド名がブラックリストにあれば、プレイヤーはそのワールドにホームを設定することができなくなります。/blacklistでブラックリストに登録されているワールドを表示できます。
+- **/setmax [GroupName] [Amount]** - このコマンドは、「homes.setmax」という権限があるプレーヤーが、特定の権限グループに対して許可されるホームの最大数を設定することを許可します。例えば、デフォルトのパーミッショングループに4つのホームだけを許可したい場合、「/setmax default 4」コマンドを実行します。
 
 # Permissions
 - **homes.*** - A player given this permission will be allowed all commands under the Set Homes plugin
