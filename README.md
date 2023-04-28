@@ -1,5 +1,5 @@
 # SetHomes
-A simple homes plugin with the ability to create, delete, and teleport to many different homes. Have the ability to control a blacklist of worlds in which players will be restricted from setting homes. Using the config you can control setting such as a maximum number of homes, teleport cooldown, teleport delay, and their respective messages that get display to the user.
+様々なホームの作成、削除、テレポートが可能なシンプルなホームプラグインです。プレイヤーがホームを設定することを制限されるワールドのブラックリストをコントロールする機能があります。設定ファイルで、ホームの最大数、テレポートのクールダウン、テレポートの遅延、およびユーザーに表示されるそれぞれのメッセージなどの設定を制御することができます。
 
 # Installation
 Simply place the downloaded jar into your server plugins folder.
