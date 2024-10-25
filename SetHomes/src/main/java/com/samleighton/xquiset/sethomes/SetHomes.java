@@ -40,33 +40,33 @@ public class SetHomes extends JavaPlugin {
     private final Database db = new Database(this);
     public final String LOG_PREFIX = "[SetHomes] ";
     private final String configHeader = StringUtils.repeat("-", 26)
-            + "\n\tSetHomes Config\t\n" + StringUtils.repeat("-", 26) + "\n"
-            + "Messages: \n\tYou can use chat colors in messages with this symbol §.\n"
-            + "\tI.E: §b will change any text after it to an aqua blue color.\n"
-            + "\tColor codes may be found here https://www.digminecraft.com/lists/color_list_pc.php\n"
-            + "Time: \n\tAny time value is based in seconds.\n"
-            + "Things to Note: \n\tSet any integer option to 0 for it to be ignored.\n"
-            + "\tThe max-homes does not include the default un-named home.\n"
-            + "\tUse %s as the seconds variable in the cool down message.\n";
+            + "\n\tSetHomesの設定\t\n" + StringUtils.repeat("-", 26) + "\n"
+            + "メッセージ: \n\tメッセージでチャットカラーを使用するには、この記号 § を使用します。\n"
+            + "\t例えば: §b はその後のテキストをアクアブルーに変更します。\n"
+            + "\t色コードはここで見つけられます https://www.digminecraft.com/lists/color_list_pc.php\n"
+            + "時間: \n\t任意の時間値は秒単位です。\n"
+            + "注意すべきこと: \n\t任意の整数オプションを0に設定すると無視されます。\n"
+            + "\tmax-homesはデフォルトの名前のないホームには含まれません。\n"
+            + "\tクールダウンメッセージ内の秒数変数には%sを使用します。\n";
 
     @Override
     public void onEnable() {
-        // Try to setup LuckPerms
+        // LuckPermsの設定を試みる
         if (!setupLuckPerms()) {
-            // Setup Vault if no LuckPerms
+            // LuckPermsがない場合はVaultの権限を設定
             if (!setupVaultPermissions()) {
-                Bukkit.getServer().getLogger().log(Level.WARNING, LOG_PREFIX + "Could not connect to a permissions plugin! Config setting \"max-homes\" will be ignored!");
+                Bukkit.getServer().getLogger().log(Level.WARNING, LOG_PREFIX + "権限プラグインへの接続に失敗しました！設定 \"max-homes\" は無視されます！");
             }
         }
 
-        // Load the configuration files on enable or reload
+        // 有効化またはリロード時に設定ファイルを読み込む
         loadConfigurationFiles();
-        // Initialize the command executors
+        // コマンド実行者を初期化
         registerCommands();
-        // Register event listener
+        // イベントリスナーを登録
         new EventListener(this);
 
-        // Register the database connection if enabled from config
+        // 設定から有効化されている場合はデータベース接続を登録
         if (isDBEnabled()) {
             registerDB();
         }
@@ -74,43 +74,42 @@ public class SetHomes extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Close any existing mysql connections
+        // 既存のMySQL接続を閉じる
         if (dbConnector != null) {
             dbConnector.closeConnection();
         }
     }
 
     /**
-     * Loads in configs if they exist otherwise
-     * if config does not exist then we create it with
-     * preset defaults
+     * 設定ファイルが存在する場合は読み込み、
+     * 存在しない場合はデフォルト設定で作成します。
      */
     private void loadConfigurationFiles() {
-        // Get the configs
+        // 設定を取得
         homesCfg = getHomes().getConfig();
         FileConfiguration blacklistCfg = getBlacklist().getConfig();
         FileConfiguration dbCfg = getDb().getConfig();
 
-        // Establish blacklist default config path
+        // ブラックリストのデフォルト設定パスを確立
         if (!(blacklistCfg.isSet("blacklisted_worlds"))) {
             blacklistCfg.addDefault("blacklisted_worlds", new ArrayList<String>());
         }
 
-        // Save defaults
+        // デフォルトを保存
         blacklistCfg.options().copyDefaults(true);
         getBlacklist().save();
 
-        // Establish homes default paths
+        // ホームのデフォルトパスを確立
         if (!(homesCfg.isSet("allNamedHomes") || homesCfg.isSet("unknownHomes"))) {
             homesCfg.addDefault("allNamedHomes", new HashMap<String, HashMap<String, Home>>());
             homesCfg.addDefault("unknownHomes", new HashMap<String, Home>());
         }
 
-        // Save defaults
+        // デフォルトを保存
         homesCfg.options().copyDefaults(true);
         getHomes().save();
 
-        // Establish database default paths
+        // データベースのデフォルトパスを確立
         dbCfg.addDefault("enabled", false);
         dbCfg.addDefault("host", "localhost");
         dbCfg.addDefault("database", "sethomes");
@@ -119,26 +118,26 @@ public class SetHomes extends JavaPlugin {
         dbCfg.addDefault("port", 3306);
         dbCfg.addDefault("db_prefix", "mc_");
 
-        // Save database defaults
+        // データベースのデフォルトを保存
         dbCfg.options().copyDefaults(true);
         getDb().save();
 
-        // Copy homes from old config if they were set and delete them from default config
+        // 古い設定からホームをコピーし、デフォルト設定から削除
         config = getConfig();
         copyHomes(config, getHomes());
 
-        // Setup defaults for config
+        // 設定のデフォルトを設定
         if (!config.isSet("max-homes") || !config.isSet("max-homes-msg") || !config.isSet("tp-delay")
                 || !config.isSet("tp-cooldown") || !config.isSet("tp-cancelOnMove")
                 || !config.isSet("tp-cancelOnMove-msg") || !config.isSet("tp-cooldown-msg")
                 || !config.isSet("auto-update")) {
-            // Sets the max homes to unlimited by default
+            // デフォルトでは最大ホームを無制限に設定
 
             if (!config.isSet("max-homes")) {
                 config.set("max-homes.default", 0);
             }
             if (!config.isSet("max-homes-msg")) {
-                config.set("max-homes-msg", "§4You have reached the maximum amount of saved homes!");
+                config.set("max-homes-msg", "§4保存されたホームの最大数に達しました！");
             }
             if (!config.isSet("tp-delay")) {
                 config.set("tp-delay", 3);
@@ -150,18 +149,18 @@ public class SetHomes extends JavaPlugin {
                 config.set("tp-cancelOnMove", false);
             }
             if (!config.isSet("tp-cancelOnMove-msg")) {
-                config.set("tp-cancelOnMove-msg", "§4Movement detected! Teleporting has been cancelled!");
+                config.set("tp-cancelOnMove-msg", "§4動きが検出されました！テレポートがキャンセルされました！");
             }
             if (!config.isSet("tp-cooldown-msg")) {
-                config.set("tp-cooldown-msg", "§4You must wait another %s second(s) before teleporting!");
+                config.set("tp-cooldown-msg", "§4テレポートする前にあと%s秒待つ必要があります！");
             }
         }
 
         if (config.isSet("max-homes")) {
             if (config.getInt("max-homes") != 0) {
                 int maxHomes = config.getInt("max-homes");
-                Bukkit.getServer().getLogger().log(Level.WARNING, "[SetHomes] We've detected you previously set the max homes within config.yml. We have updated the config and suggest \n" +
-                        "you read how to properly setup the config for your permission groups on the plugin page: https://dev.bukkit.org/projects/set-homes");
+                Bukkit.getServer().getLogger().log(Level.WARNING, "[SetHomes] config.yml内で以前に最大ホームを設定したことが検出されました。設定が更新されましたので、\n" +
+                        "プラグインページで権限グループの正しい設定方法を確認することをお勧めします: https://dev.bukkit.org/projects/set-homes");
                 config.set("max-homes.default", maxHomes);
             }
         }
@@ -176,9 +175,8 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Registers the command classes
-     * to handle the execution of these
-     * commands
+     * コマンドクラスを登録し、
+     * これらのコマンドの実行を処理します。
      */
     private void registerCommands() {
         Objects.requireNonNull(this.getCommand("sethome")).setExecutor(new SetHome(this));
@@ -191,71 +189,71 @@ public class SetHomes extends JavaPlugin {
         Objects.requireNonNull(this.getCommand("delhome-of")).setExecutor(new DeleteHome(this));
         Objects.requireNonNull(this.getCommand("uhome")).setExecutor(new UpdateHome(this));
         Objects.requireNonNull(this.getCommand("uhome-of")).setExecutor(new UpdateHome(this));
-        Objects.requireNonNull(this.getCommand("setmax")).setExecutor(new SetMax(this));
+        Objects.requireNonNull(this.getCommand("setmax")).setExecutor(new SetMaxHomes(this));
     }
 
     /**
-     * Creates the MySQLConnector object for the plugin
+     * プラグイン用のMySQLConnectorオブジェクトを作成します。
      */
     private void registerDB() {
         this.dbConnector = new MySQLConnector(this);
     }
 
     /**
-     * Used to initialize the Permissions service with VaultAPI
+     * VaultAPIを使用して権限サービスを初期化します。
      *
-     * @return true if Vault was setup, false otherwise
+     * @return Vaultがセットアップされた場合はtrue、それ以外の場合はfalse
      */
     private boolean setupVaultPermissions() {
         try {
-            // Attempt to get service provider
+            // サービスプロバイダーを取得しようとします。
             RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
 
-            // Service provider was successfully obtained
+            // サービスプロバイダーが正常に取得されました。
             if (rsp != null) {
                 vaultPerms = rsp.getProvider();
-                Bukkit.getServer().getLogger().info(LOG_PREFIX + "Hooked into Vault!");
+                Bukkit.getServer().getLogger().info(LOG_PREFIX + "Vaultに接続しました！");
                 return true;
             }
         } catch (NoClassDefFoundError ignored) {
-            Bukkit.getServer().getLogger().info(LOG_PREFIX + "Vault was not found.");
+            Bukkit.getServer().getLogger().info(LOG_PREFIX + "Vaultが見つかりませんでした。");
         }
         return false;
     }
 
     /**
-     * Used to initialize the Permissions service with LuckPermsAPI
+     * LuckPermsAPIを使用して権限サービスを初期化します。
      *
-     * @return true if LuckPerms was setup, false otherwise
+     * @return LuckPermsがセットアップされた場合はtrue、それ以外の場合はfalse
      */
     private boolean setupLuckPerms() {
         try {
-            // Attempt to get service provider
+            // サービスプロバイダーを取得しようとします。
             RegisteredServiceProvider<LuckPerms> rsp = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
 
-            // Service provider was successfully obtained
+            // サービスプロバイダーが正常に取得されました。
             if (rsp != null) {
                 luckPermsApi = rsp.getProvider();
-                Bukkit.getServer().getLogger().info(LOG_PREFIX + "Hooked into LuckPerms!");
+                Bukkit.getServer().getLogger().info(LOG_PREFIX + "LuckPermsに接続しました！");
                 return true;
             }
         } catch (NoClassDefFoundError ignored) {
-            Bukkit.getServer().getLogger().info(LOG_PREFIX + "Luck perms was not found! Reverting to vault...");
+            Bukkit.getServer().getLogger().info(LOG_PREFIX + "LuckPermsが見つかりませんでした！Vaultに戻ります...");
         }
 
         return false;
     }
 
     /**
-     * Used to create the map of homes for a given player UUID
+     * 特定のプレイヤーUUIDのためにホームのマップを作成します。
      *
-     * @param uuid of the player we're attempting to get homes for
-     * @return a hashmap of all the players homes
+     * @param uuid ホームを取得しようとしているプレイヤーのUUID
+     * @return プレイヤーの全てのホームのハッシュマップ
      */
     public HashMap<String, Home> getPlayersNamedHomes(String uuid) {
         HashMap<String, Home> playersNamedHomes = new HashMap<>();
 
-        // Check if we're saving to DB or file
+        // データベースまたはファイルに保存しているか確認
         if (isDBEnabled()) {
             try {
                 ResultSet rs = getDbConnector().executeSQL(
@@ -292,15 +290,15 @@ public class SetHomes extends JavaPlugin {
             String homesPath = "allNamedHomes." + uuid;
             homesCfg = getHomes().getConfig();
 
-            // Loop through the players home list and create a hash map with the home names as a key and home as value
+            // プレイヤーのホームリストをループして、ホーム名をキー、ホームを値とするハッシュマップを作成
             for (String id : Objects.requireNonNull(homesCfg.getConfigurationSection(homesPath)).getKeys(false)) {
                 String path = homesPath + "." + id + ".";
 
-                // Create the home object so we can add the description to it
+                // ホームオブジェクトを作成して、説明を追加できるようにする
                 Location home = getHomeLocaleFromConfig(path);
                 Home h = new Home(home);
 
-                // Check if there is a desc set
+                // 説明が設定されているか確認
                 if (homesCfg.isSet(path + ".desc")) {
                     h.setDesc(homesCfg.getString(path + ".desc"));
                 }
@@ -313,11 +311,11 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to get the players named home as a location from their map
+     * プレイヤーのホームマップから、指定されたホームをロケーションとして取得します。
      *
-     * @param uuid     player for which to get the home from
-     * @param homeName the name of the home to create the location for
-     * @return location of the players named home
+     * @param uuid     ホームを取得するプレイヤーのUUID
+     * @param homeName 作成するホームの名前
+     * @return プレイヤーの指定されたホームのロケーション
      */
     public Location getNamedHomeLocal(String uuid, String homeName) {
         Home h = getPlayersNamedHomes(uuid).get(homeName);
@@ -325,9 +323,9 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Gets the Map of Groups to Max homes from the config
+     * 設定からグループの最大ホーム数を取得します。
      *
-     * @return a HashMap with the Group as the Key and the max number of homes as the value
+     * @return グループをキー、最大ホーム数を値とするハッシュマップ
      */
     public HashMap<String, Integer> getMaxHomes() {
         HashMap<String, Integer> maxHomes = new HashMap<>();
@@ -341,13 +339,13 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * @param uuid of the player we're checking named homes for
-     * @return true || false
+     * @param uuid ホームが設定されているか確認するプレイヤーのUUID
+     * @return true または false
      */
     public boolean hasNamedHomes(String uuid) {
         boolean hasHomes = false;
 
-        // Check if we're saving to DB or file
+        // データベースまたはファイルに保存しているか確認
         if (isDBConnected()) {
             try {
                 String sql = String.format(
@@ -356,7 +354,7 @@ public class SetHomes extends JavaPlugin {
                         getDbConnector().getPrefix(),
                         uuid
                 );
-                // Query the database for any rows belonging to this uuid
+                // このUUIDに属する行をデータベースからクエリします。
                 ResultSet rs = getDbConnector().executeSQL(sql);
 
                 if (rs != null) {
@@ -365,15 +363,15 @@ public class SetHomes extends JavaPlugin {
                     }
                 }
             } catch (SQLException e) {
-                // Print any database errors
+                // データベースエラーを表示
                 printDBError(e);
             } finally {
                 getDbConnector().close();
             }
         } else {
-            // Get the homes config
+            // ホームの設定を取得
             homesCfg = getHomes().getConfig();
-            // Determine if this uuid has any named homes set
+            // このUUIDに名前のあるホームが設定されているか確認
             hasHomes = homesCfg.contains("allNamedHomes." + uuid) && homesCfg.isSet("allNamedHomes." + uuid);
         }
 
@@ -381,10 +379,10 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to save a named home into the config
+     * 名前のあるホームを設定に保存します。
      *
-     * @param uuid of the player
-     * @param home object of the home object to save
+     * @param uuid プレイヤーのUUID
+     * @param home 保存するホームオブジェクト
      */
     public void saveNamedHome(String uuid, Home home) {
         if (isDBConnected()) {
@@ -414,10 +412,10 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to delete a players named home from the config
+     * プレイヤーの名前付きホームを設定から削除するために使用されます。
      *
-     * @param uuid     of the player to get home list for
-     * @param homeName name of home to delete from list
+     * @param uuid プレイヤーのUUID
+     * @param homeName 削除するホームの名前
      */
     public void deleteNamedHome(String uuid, String homeName) {
         if (isDBConnected()) {
@@ -434,10 +432,10 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to get the location object of an un-named home
+     * 名前のないホームの位置オブジェクトを取得するために使用されます。
      *
-     * @param uuid of the player to get a home for
-     * @return the home to teleport the player to
+     * @param uuid ホームを取得するプレイヤーのUUID
+     * @return プレイヤーをテレポートするホーム
      */
     public Location getPlayersUnnamedHome(String uuid) {
         Location homeLocation = null;
@@ -469,20 +467,20 @@ public class SetHomes extends JavaPlugin {
                 getDbConnector().close();
             }
         } else {
-            //Grabs all the data from the configuration file
+            // 設定ファイルからすべてのデータを取得
             String path = "unknownHomes." + uuid;
             homesCfg = getHomes().getConfig();
             homeLocation = getHomeLocaleFromConfig(path);
         }
 
-        // Return the home as a location
+        // ホームを位置として返す
         return homeLocation;
     }
 
     /**
-     * Used to check if a player has un-named homes
+     * プレイヤーが名前のないホームを持っているかどうかを確認するために使用されます。
      *
-     * @param uuid of the player we're checking unnamed homes for
+     * @param uuid 名前のないホームを確認するプレイヤーのUUID
      * @return true || false
      */
     public boolean hasUnknownHomes(String uuid) {
@@ -495,7 +493,7 @@ public class SetHomes extends JavaPlugin {
                         getDbConnector().getPrefix(),
                         uuid
                 );
-                // Query the database for any rows belonging to this uuid
+                // このUUIDに属する行があるかデータベースをクエリ
                 ResultSet rs = getDbConnector().executeSQL(sql);
 
                 if (rs != null) {
@@ -504,7 +502,7 @@ public class SetHomes extends JavaPlugin {
                     }
                 }
             } catch (SQLException e) {
-                // Print any database errors
+                // データベースエラーを表示
                 printDBError(e);
             } finally {
                 getDbConnector().close();
@@ -518,16 +516,16 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to save the Unknown home to the config
+     * 名前のないホームを設定に保存するために使用されます。
      *
-     * @param uuid of the player to save a home for
-     * @param home to save
+     * @param uuid ホームを保存するプレイヤーのUUID
+     * @param home 保存するホーム
      */
     public void saveUnknownHome(String uuid, Home home) {
         if (isDBConnected()) {
             saveNamedHome(uuid, home);
         } else {
-            //Saves the variables to construct a home location to the configuration file
+            // ホームの位置を構築するための変数を設定ファイルに保存
             String path = "unknownHomes." + uuid;
             saveHomeToConfig(home, path);
             getHomes().save();
@@ -535,10 +533,10 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Helper method for saving a home object to the config file
+     * ホームオブジェクトを設定ファイルに保存するためのヘルパーメソッド
      *
-     * @param home, The home object to save
-     * @param path, The path in the config to save the home
+     * @param home 保存するホームオブジェクト
+     * @param path 保存先の設定のパス
      */
     private void saveHomeToConfig(Home home, String path) {
         homesCfg = getHomes().getConfig();
@@ -551,10 +549,10 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Helper method to extract a homes location from the config file
+     * 設定ファイルからホームの位置を取得するためのヘルパーメソッド
      *
-     * @param path, The path to the home data
-     * @return the location object of the home
+     * @param path ホームデータへのパス
+     * @return ホームの位置オブジェクト
      */
     private Location getHomeLocaleFromConfig(String path) {
         World world = getServer().getWorld(Objects.requireNonNull(homesCfg.getString(path + ".world")));
@@ -568,9 +566,9 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Remove an unknown home from the config
+     * 設定から名前のないホームを削除するために使用されます。
      *
-     * @param uuid of the player to delete default home for
+     * @param uuid デフォルトホームを削除するプレイヤーのUUID
      */
     public void deleteUnknownHome(String uuid) {
         if (isDBConnected()) {
@@ -579,7 +577,7 @@ public class SetHomes extends JavaPlugin {
             getDbConnector().executeSQL(sql);
             getDbConnector().close();
         } else {
-            //Set the path to the players id as null
+            // プレイヤーのIDのパスをnullに設定
             String path = "unknownHomes." + uuid;
             getHomes().getConfig().set(path, null);
             getHomes().save();
@@ -588,37 +586,37 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to manipulate the WorldBlacklist configuration file
+     * WorldBlacklist設定ファイルを操作するために使用されます。
      *
-     * @return WorldBlacklist object
+     * @return WorldBlacklistオブジェクト
      */
     public WorldBlacklist getBlacklist() {
         return blacklist;
     }
 
     /**
-     * Used for reading the world names in from the blacklist config
+     * ブラックリスト設定からワールド名を読み取るために使用されます。
      *
-     * @return list of World Names
+     * @return ワールド名のリスト
      */
     public List<String> getBlacklistedWorlds() {
         return getBlacklist().getConfig().getStringList("blacklisted_worlds");
     }
 
     /**
-     * Used to get the homes
+     * ホームを取得するために使用されます。
      *
-     * @return Homes object
+     * @return Homesオブジェクト
      */
     public Homes getHomes() {
         return homes;
     }
 
     /**
-     * Used to copy homes from default config into new homes config
+     * デフォルトの設定から新しいホーム設定にホームをコピーするために使用されます。
      *
-     * @param config     Orginal old configuration
-     * @param homeConfig New homes configuration
+     * @param config 元の古い設定
+     * @param homeConfig 新しいホーム設定
      */
     private void copyHomes(FileConfiguration config, Homes homeConfig) {
         if (config.contains("allNamedHomes")) {
@@ -641,72 +639,72 @@ public class SetHomes extends JavaPlugin {
     }
 
     /**
-     * Used to get the Database configuration parameters
+     * データベースの設定パラメータを取得するために使用されます。
      *
-     * @return the Database Configuration object
+     * @return データベース設定オブジェクト
      */
     public Database getDb() {
         return db;
     }
 
     /**
-     * Used to obtain the MySQLConnector object for database communication
+     * データベース通信のためのMySQLConnectorオブジェクトを取得するために使用されます。
      *
-     * @return the MySQLConnector object
+     * @return MySQLConnectorオブジェクト
      */
     public MySQLConnector getDbConnector() {
         return this.dbConnector;
     }
 
     /**
-     * Used to determine if database support has been enabled or not in config
+     * 設定でデータベースサポートが有効になっているかどうかを判断するために使用されます。
      *
-     * @return boolean | True if database is support is enabled false otherwise
+     * @return boolean | データベースサポートが有効な場合はtrue、そうでない場合はfalse
      */
     public boolean isDBEnabled() {
         return getDb().getConfig().getBoolean("enabled");
     }
 
     /**
-     * Check to see if the DB connection has been established by our object
+     * DB接続が確立されているかどうかを確認します。
      *
-     * @return True if MySQLConnector object has been registered in onEnable()
+     * @return MySQLConnectorオブジェクトがonEnable()で登録されている場合はtrue
      */
     public boolean isDBConnected() {
         return dbConnector != null;
     }
 
     /**
-     * Used to cancel a bukkit runnable task
+     * Bukkitのランナブルタスクをキャンセルするために使用されます。
      *
-     * @param taskId, The id of the task to cancel
+     * @param taskId キャンセルするタスクのID
      */
     public void cancelTask(int taskId) {
         Bukkit.getScheduler().cancelTask(taskId);
     }
 
     /**
-     * Used to get the servers permissions
+     * サーバーの権限を取得するために使用されます。
      *
-     * @return the permissions handler
+     * @return 権限ハンドラ
      */
     public Permission getVaultPermissions() {
         return this.vaultPerms;
     }
 
     /**
-     * Used to obtain the instance ot LuckPerms API
+     * LuckPerms APIのインスタンスを取得するために使用されます。
      *
-     * @return instance of LuckPerms
+     * @return LuckPermsのインスタンス
      */
     public LuckPerms getLuckPermsApi() {
         return this.luckPermsApi;
     }
 
     /**
-     * Used to print any database errors encountered
+     * 発生したデータベースエラーを表示するために使用されます。
      *
-     * @param e, The SQLException object which caused this error
+     * @param e このエラーを引き起こしたSQLExceptionオブジェクト
      */
     public void printDBError(SQLException e) {
         getLogger().log(Level.SEVERE, LOG_PREFIX + "SQLException: " + e.getMessage());
