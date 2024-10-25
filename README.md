@@ -22,47 +22,47 @@
 - **/setmax [GroupName] [Amount]** - このコマンドは、「homes.setmax」という権限があるプレーヤーが、特定の権限グループに対して許可されるホームの最大数を設定することを許可します。例えば、デフォルトのパーミッショングループに4つのホームだけを許可したい場合、「/setmax default 4」コマンドを実行します。
 
 # Permissions
-- **homes.*** - A player given this permission will be allowed all commands under the Set Homes plugin
-- **homes.home** - A player with this permission is allowed to teleport to named homes
-- **homes.sethome** - A player with this permission is allowed to set named homes
-- **homes.strike** - Give the power to others!
-- **homes.blacklist_list** - Give the ability to list worlds currently in the blacklist
-- **homes.blacklist_add** - Give the ability to add worlds to the blacklist
-- **homes.blacklist_remove** - Give the ability to remove worlds from the blacklist
-- **homes.gethomes** - Give the ability to list any players active homes
-- **homes.home-of** - Give the ability to teleport to one of any players active homes
-- **homes.delhome-of** - Give the ability to delete one of any players active homes
-- **homes.config_bypass** - A player given this permission can set homes in blacklisted worlds, and doesn't have to wait for cooldown or teleport delays. They will also be able to exceed the max home limit.
-- **homes.uhome** - Give the ability to update homes
-- **homes.uhome-of** - Give the ability to update other players homes
-- **homes.setmax** - Give the ability to set a maximum number of homes for a permission group
+- **homes.*** - この権限を持つプレイヤーは Set Homes プラグインのすべてのコマンドが使用可能
+- **homes.home** - この権限を持つプレイヤーは名前付きホームへテレポートできる
+- **homes.sethome** - この権限を持つプレイヤーは名前付きホームを設定できる
+- **homes.strike** - 他のプレイヤーに対して権限を与える権限
+- **homes.blacklist_list** - 現在ブラックリストにあるワールドをリストできる権限
+- **homes.blacklist_add** - ワールドをブラックリストに追加できる権限
+- **homes.blacklist_remove** - ブラックリストからワールドを削除できる権限
+- **homes.gethomes** - 任意のプレイヤーのアクティブなホームをリストできる権限
+- **homes.home-of** - 任意のプレイヤーのアクティブなホームにテレポートできる権限
+- **homes.delhome-of** - 任意のプレイヤーのアクティブなホームを削除できる権限
+- **homes.config_bypass** - この権限を持つプレイヤーはブラックリストに登録されているワールドにホームを設定でき、クールダウンやテレポートの遅延を待たずに済む。また、最大ホーム数を超えることができる。
+- **homes.uhome** - ホームを更新できる権限
+- **homes.uhome-of** - 他のプレイヤーのホームを更新できる権限
+- **homes.setmax** - 権限グループに最大ホーム数を設定できる権限
 
 # Default Config
 ```yaml
 # --------------------------
-# 	SetHomes Config	
+# 	SetHomes 設定	
 # --------------------------
-# Messages: 
-# 	You can use chat colors in messages with this symbol §.
-# 	I.E: §b will change any text after it to an aqua blue color.
-# 	Color codes may be found here https://www.digminecraft.com/lists/color_list_pc.php
-# Time: 
-# 	Any time value is based in seconds.
-# Things to Note: 
-# 	Set any integer option to 0 for it to be ignored.
-# 	The max-homes does not include the default un-named home.
-# 	Use %s as the seconds variable in the cooldown message.
+# メッセージ: 
+# 	この記号 § を使ってメッセージ内でチャットカラーを設定できます。
+# 	例: §b を入れるとその後のテキストがアクアブルーの色に変わります。
+# 	カラーコードは https://www.digminecraft.com/lists/color_list_pc.php で確認できます。
+# 時間: 
+# 	すべての時間は秒単位です。
+# 注意事項: 
+# 	整数オプションを 0 に設定すると無視されます。
+# 	max-homes はデフォルトの無名のホームを含みません。
+# 	クールダウンメッセージ内で %s を秒数の変数として使用します。
 
 max-homes:
   default: 0
-max-homes-msg: §4You have reached the maximum amount of saved homes!
+max-homes-msg: §4保存できるホームの最大数に達しました！
 tp-delay: 3
 tp-cooldown: 0
 tp-cancelOnMove: false
-tp-cancelOnMove-msg: §4Movement detected! Teleporting has been cancelled!
-tp-cooldown-msg: §4You must wait another %s second(s) before teleporting!
+tp-cancelOnMove-msg: §4動作が検出されました！テレポートがキャンセルされました！
+tp-cooldown-msg: §4テレポートするにはあと %s 秒お待ちください！
 auto-update: true
-```
+
 
 # Example Max-Homes setup
 ```yaml
@@ -74,17 +74,17 @@ max-homes:
 ```
 
 # F.A.Q
-- **Q: How can I give players permission to set named homes?**
-  **A:** You will need to install a permission plugin, either [LuckPerms](https://luckperms.net/download) or [Vault](https://dev.bukkit.org/projects/vault) & a Vault supported permissions plugin then apply the permission "homes.sethome" to the (player/group) you would like to allow the usage of multiple homes for.
+- **Q: プレイヤーに名前付きホームを設定する権限を与えるにはどうすれば良いですか？**
+  **A:**[LuckPerms](https://luckperms.net/download)または[Vault](https://dev.bukkit.org/projects/vault) & Vault 対応の権限プラグインをインストールし、 "homes.sethome" 権限を付与したいプレイヤーやグループに適用してください。
   
 # Change Log
-- Added support for Minecraft/Craftbukkit V1.16.3.
-- Added support for LuckPerms permission plugin
-- Made LuckPerms default permission plugin, and set Vault as a rollback before disabling all together
-- Changed colors, and layout of list homes message to be more readable
-- Fixed error, where SetHomes could not load without Vault
-- Removed auto-updater functionality because it was not working properly
-- Added server log messages for permissions plugin hooking, and no perms plugin found
+ - Minecraft/Craftbukkit V1.16.3 のサポートを追加
+ - LuckPerms 権限プラグインのサポートを追加
+ - LuckPerms をデフォルトの権限プラグインに設定し、Vault はフェールオーバーとして設定
+ - ホームリストメッセージの色とレイアウトをより読みやすく変更
+ - Vault なしで SetHomes がロードできなかったエラーを修正
+ - 正常に動作していなかったため、自動アップデート機能を削除
+ - 権限プラグインのフックや、権限プラグインが見つからなかった場合のサーバーログメッセージを追加
 
 # Donations
-I work on this plugin with the little amount of free time that I have. Please feel free to donate via [PayPal](https://www.paypal.com/donate/?return=https://dev.bukkit.org/projects/312833&cn=Add+special+instructions+to+the+addon+author()&business=sam%40samleighton.us&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted&cancel_return=https://dev.bukkit.org/projects/312833&lc=US&item_name=Set+Homes+(from+bukkit.org)&cmd=_donations&rm=1&no_shipping=1&currency_code=USD) any amount you desire to show your support, and help me stay motivated to keep this project going. Thank You!
+このプラグインは私の限られた自由時間で開発しています。もし支援の意思がある方は、[PayPal](https://www.paypal.com/donate/?return=https://dev.bukkit.org/projects/312833&cn=Add+special+instructions+to+the+addon+author()&business=sam%40samleighton.us&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted&cancel_return=https://dev.bukkit.org/projects/312833&lc=US&item_name=Set+Homes+(from+bukkit.org)&cmd=_donations&rm=1&no_shipping=1&currency_code=USD)経由で任意の金額を寄付してください。このプロジェクトの継続に向けた支援とモチベーション維持に大変感謝いたします。Thank You!
