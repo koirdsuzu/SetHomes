@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class Home {
 
-    //Data necessary for a home
+    // 家に必要なデータ
     private double x;
     private double y;
     private double z;
@@ -17,7 +17,7 @@ public class Home {
     private String homeName;
     private String desc = null;
 
-    //Instantiate data
+    // データを初期化
     public Home(Location l) {
         setWorld(Objects.requireNonNull(l.getWorld()).getName());
         setX(l.getX());
@@ -39,126 +39,126 @@ public class Home {
     }
 
     /**
-     * @return the world
+     * @return world
      */
     public String getWorld() {
         return world;
     }
 
     /**
-     * @param w, set the World players home
+     * @param w 世界を設定
      */
     public void setWorld(String w) {
         this.world = w;
     }
 
     /**
-     * @return the pitch
+     * @return pitch
      */
     public float getPitch() {
         return pitch;
     }
 
     /**
-     * @param pitch, set the pitch of the players home
+     * @param pitch プレイヤーの家のピッチを設定
      */
     public void setPitch(float pitch) {
         this.pitch = pitch;
     }
 
     /**
-     * @return the yaw
+     * @return yaw
      */
     public float getYaw() {
         return yaw;
     }
 
     /**
-     * @param yaw, set the Yaw of the players home
+     * @param yaw プレイヤーの家のヨーを設定
      */
     public void setYaw(float yaw) {
         this.yaw = yaw;
     }
 
     /**
-     * @return the z
+     * @return z
      */
     public double getZ() {
         return z;
     }
 
     /**
-     * @param z, set Z value of players home
+     * @param z プレイヤーの家のZ値を設定
      */
     public void setZ(double z) {
         this.z = z;
     }
 
     /**
-     * @return the x
+     * @return x
      */
     public double getX() {
         return x;
     }
 
     /**
-     * @param x, set X value of players home
+     * @param x プレイヤーの家のX値を設定
      */
     public void setX(double x) {
         this.x = x;
     }
 
     /**
-     * @return the y
+     * @return y
      */
     public double getY() {
         return y;
     }
 
     /**
-     * @param y, set Y value of players home
+     * @param y プレイヤーの家のY値を設定
      */
     public void setY(double y) {
         this.y = y;
     }
 
     /**
-     * @return the description
+     * @return 説明
      */
     public String getDesc() {
         return desc;
     }
 
     /**
-     * @param desc, sets a players home description
+     * @param desc プレイヤーの家の説明を設定
      */
     public void setDesc(String desc) {
         this.desc = desc;
     }
 
     /**
-     * @return the homeName
+     * @return homeName
      */
     public String getHomeName() {
         return homeName;
     }
 
     /**
-     * @param homeName, set the homes name given by the player
+     * @param homeName プレイヤーが付けた家の名前を設定
      */
     public void setHomeName(String homeName) {
         this.homeName = homeName;
     }
 
     /**
-     * @return the home as a location object
+     * @return 家をLocationオブジェクトとして返す
      */
     public Location toLocation() {
         return new Location(Bukkit.getServer().getWorld(this.getWorld()), getX(), getY(), getZ(), getYaw(), getPitch());
     }
 
     /**
-     * @return return the home object as a string
+     * @return 家の情報を文字列として返す
      */
     public String toString() {
         return "Home Name: " + getHomeName() + "\n" +
@@ -166,3 +166,4 @@ public class Home {
                 "Location: " + toLocation().toString() + "\n";
     }
 }
+
