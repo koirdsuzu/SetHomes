@@ -23,9 +23,9 @@ public class Blacklist implements CommandExecutor {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        //Make sure the sender of the command is a player
+        //コマンドの送信者がプレイヤーであることを確認してください
         if (!(sender instanceof Player)) {
-            //Sends message to sender of command that they're not a player
+            //コマンドの送信者にプレイヤーではないというメッセージを送信します
             ChatUtils.notPlayerError(sender);
             return false;
         }
@@ -34,9 +34,9 @@ public class Blacklist implements CommandExecutor {
             Player p = (Player) sender;
             String filler = StringUtils.repeat("-", 53);
 
-            //If they pass no parameters to the command then just list the worlds blacklisted
+            //コマンドにパラメータを渡さない場合は、ブラックリストに登録されたワールドをリストするだけです
             if (args.length == 0) {
-                //Check for proper permissions
+                //適切な権限があるか確認する
                 if (p.hasPermission("homes.blacklist_list")) {
                     if (pl.getBlacklistedWorlds().size() > 0) {
                         p.sendMessage(ChatColor.DARK_RED + "All blacklisted worlds:");
@@ -46,76 +46,76 @@ public class Blacklist implements CommandExecutor {
                         }
                         return true;
                     } else {
-                        //The size of the blacklist returned from config was 0
-                        ChatUtils.sendInfo(p, "There are no worlds in the blacklist currently!");
+                        //設定から返されたブラックリストのサイズは 0 でした
+                        ChatUtils.sendInfo(p, "現在、ブラックリストにワールドはありません。");
                         return true;
                     }
                 } else {
-                    //Proper permissions were not found
+                    //適切な権限が見つかりませんでした
                     ChatUtils.permissionError(p);
                     return true;
                 }
             } else {
-                //Adding a world to the blacklist
+                //ブラックリストに世界を追加する
                 if (args[0].equalsIgnoreCase("add")) {
-                    //Check for proper permissions
+                    //適切な権限があるか確認する
                     if (p.hasPermission("homes.blacklist_add")) {
-                        //They must specify a world name for this command.
+                        //このコマンドにはワールド名を指定する必要があります。
                         if (args.length == 2) {
-                            //Check to make sure what they entered is actually a valid world and that it is not in the blacklist already.
+                            //入力したものが実際に有効なワールドであり、ブラックリストにまだ含まれていないことを確認してください。
                             if (getAllWorlds().contains(args[1]) && !(pl.getBlacklistedWorlds().contains(args[1]))) {
-                                //Add the world to the configuration list
+                                //設定リストに世界を追加する
                                 List<String> temp = pl.getBlacklistedWorlds();
                                 temp.add(args[1]);
                                 pl.getBlacklist().getConfig().set("blacklisted_worlds", temp);
                                 pl.getBlacklist().save();
 
-                                ChatUtils.sendSuccess(p, "You have added the world '" + args[1] + "' to the blacklist!");
+                                ChatUtils.sendSuccess(p, "ワールド '" + args[1] + "' をブラックリストに追加しました。");
                                 return true;
                             } else {
-                                ChatUtils.sendError(p, "There was no world found by that name!");
+                                ChatUtils.sendError(p, "その名前の世界は見つかりませんでした。");
                                 return true;
                             }
                         } else {
-                            ChatUtils.sendError(p, "You must specify a world name to add to the blacklist!");
+                            ChatUtils.sendError(p, "ブラックリストに追加するワールド名を指定する必要があります。");
                             return true;
                         }
                     } else {
-                        //Proper permission was not found
+                        //適切な権限が見つかりませんでした
                         ChatUtils.permissionError(p);
                         return true;
                     }
-                    //Removing a world from the blacklist
+                    //ブラックリストから世界を削除する
                 } else if (args[0].equalsIgnoreCase("remove")) {
-                    //Check for proper permissions
+                    //適切な権限があるか確認する
                     if (p.hasPermission("homes.blacklist_remove")) {
-                        //They must specify a world name for this command.
+                        //このコマンドにはワールド名を指定する必要があります。
                         if (args.length == 2) {
-                            //Check to make sure the world is actually in the blacklist
+                            //世界が実際にブラックリストに含まれているか確認する
                             if (pl.getBlacklistedWorlds().contains(args[1])) {
-                                //Remove the world from the configuration list
+                                //構成リストから世界を削除する構成リストから世界を削除する構成リストから世界を削除する
                                 List<String> temp = pl.getBlacklistedWorlds();
                                 temp.remove(args[1]);
                                 pl.getBlacklist().getConfig().set("blacklisted_worlds", temp);
                                 pl.getBlacklist().save();
 
-                                ChatUtils.sendSuccess(p, "You have removed the world '" + args[1] + "' from the blacklist!");
+                                ChatUtils.sendSuccess(p, "ブラックリストからワールド '" + args[1] + "' を削除しました。");
                                 return true;
                             } else {
-                                ChatUtils.sendError(p, "There was no world by that name found in the blacklist!");
+                                ChatUtils.sendError(p, "ブラックリストにその名前の世界は見つかりませんでした。");
                                 return true;
                             }
                         } else {
-                            ChatUtils.sendError(p, "You must specify a world name to remove from the blacklist!");
+                            ChatUtils.sendError(p, "ブラックリストから削除するワールド名を指定する必要があります。");
                             return true;
                         }
                     } else {
-                        //Proper permission was not found
+                        //適切な権限が見つかりませんでした
                         ChatUtils.permissionError(p);
                         return true;
                     }
                 } else {
-                    ChatUtils.sendError(p, "There is no '" + args[0] + "' blacklist action!");
+                    ChatUtils.sendError(p, args[0] + "'ブラックリストアクションはありません！");
                     return false;
                 }
             }
@@ -123,7 +123,7 @@ public class Blacklist implements CommandExecutor {
         return false;
     }
 
-    //Gets all the worlds by name currently installed on the server
+    //現在サーバーにインストールされているすべてのワールドを名前で取得します
     private List<String> getAllWorlds() {
         List<String> worldNames = new ArrayList<String>();
 
