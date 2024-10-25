@@ -14,38 +14,40 @@ public class EventListener implements Listener {
 
     private SetHomes pl;
 
-    //Register the event listener to begin listening
+    // イベントリスナーを登録し、イベントの監視を開始する
     public EventListener(SetHomes plugin) {
         this.pl = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
+    // プレイヤーがサーバーに参加したときのイベントハンドラー
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        // Check if database support is enabled
+        // データベースサポートが有効かどうかを確認
         if (pl.isDBConnected()) {
-            // Get the player who triggered the event
+            // イベントを発生させたプレイヤーを取得
             Player p = event.getPlayer();
-            // Get the unique id of the player
+            // プレイヤーのユニークIDを取得
             String uuid = p.getUniqueId().toString();
 
-            // Add the player to the players table if not already in it
+            // プレイヤーがまだ登録されていない場合、プレイヤーズテーブルに追加する
             MySQLConnector dbConnector = pl.getDbConnector();
             dbConnector.executeSQL(String.format("INSERT IGNORE INTO %ssh_users (uuid) VALUES ('%s')", dbConnector.getPrefix(), uuid));
             dbConnector.close();
         }
     }
 
+    // プレイヤーがブロックにインタラクトしたときのイベントハンドラー
     @EventHandler
     public void onPlayerInteractBlock(PlayerInteractEvent event) {
-        // Get the player who triggered the event
+        // イベントを発生させたプレイヤーを取得
         Player p = event.getPlayer();
-        // Get the item they're holding
+        // プレイヤーが手に持っているアイテムを取得
         ItemStack item = p.getInventory().getItemInMainHand();
-        // Get the items meta
+        // アイテムのメタデータを取得
         ItemMeta itemMeta = item.getItemMeta();
 
-        // If the item is the rod that we created strike lighting bolt at the location the player is looking on click
+        // プレイヤーが持っているアイテムが特定のロッドであれば、プレイヤーが見ている場所に雷を落とす
         if (itemMeta != null) {
             if (itemMeta.hasLocalizedName()) {
                 if (itemMeta.getLocalizedName().equalsIgnoreCase("almighty")) {
@@ -53,6 +55,5 @@ public class EventListener implements Listener {
                 }
             }
         }
-
     }
 }
