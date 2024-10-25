@@ -1,2 +1,0 @@
-1. Make titles and sounds configurable
-2. Create ability to delete all homes in a world
