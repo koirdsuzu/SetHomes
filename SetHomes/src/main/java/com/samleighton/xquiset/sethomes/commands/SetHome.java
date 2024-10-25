@@ -31,66 +31,66 @@ public class SetHome implements CommandExecutor {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        //Make sure the sender of the command is a player
+        // コマンドの送信者がプレイヤーであることを確認
         if (!(sender instanceof Player)) {
-            //Sends message to sender of command that they're not a player
+            // コマンドの送信者に、プレイヤーではない旨を伝えるメッセージを送信
             ChatUtils.notPlayerError(sender);
             return false;
         }
-        //Checks if the command sent is /sethome
+
+// コマンドが /sethome であるかどうかを確認
         if (cmd.getName().equalsIgnoreCase("sethome")) {
-            //Since we know sender is a player we can Cast sender as such
+            // 送信者がプレイヤーであることが確認できたので、キャストする
             Player p = (Player) sender;
             String uuid = p.getUniqueId().toString();
             Location home = p.getLocation();
 
-            // Check to make sure the home world is not blacklisted
+            // ホームのワールドがブラックリストに載っていないことを確認
             if (pl.getBlacklistedWorlds().contains(Objects.requireNonNull(home.getWorld()).getName()) && !p.hasPermission("homes.config_bypass")) {
-                ChatUtils.sendError(p, "This world does not allow the usage of homes!");
+                ChatUtils.sendError(p, "このワールドではホームを設定できません！");
                 return true;
             }
 
-            //Create a home at the players location
+            // プレイヤーの位置にホームを作成
             Home playersHome = new Home(home);
 
-            //No home name provided
+            // ホーム名が指定されていない場合
             if (args.length < 1) {
-                //Save the home
+                // ホームを保存
                 pl.saveUnknownHome(uuid, playersHome);
 
-                ChatUtils.sendSuccess(p, "You have set a default home!");
-                //They have provided a home name and possibly description too
+                ChatUtils.sendSuccess(p, "デフォルトのホームが設定されました！");
+                // ホーム名およびおそらく説明も指定されている場合
             } else {
                 if (p.hasPermission("homes.sethome")) {
-                    //Check if players amount of homes vs the config max homes allowed
+                    // プレイヤーのホーム数と設定されている最大ホーム数を確認
                     if (pl.hasNamedHomes(uuid)) {
                         int maxHomes = getMaxHomesAllowed(p);
-                        Bukkit.getServer().getLogger().info("Max Homes: " + maxHomes);
+                        Bukkit.getServer().getLogger().info("最大ホーム数: " + maxHomes);
                         if ((pl.getPlayersNamedHomes(uuid).size() >= maxHomes && maxHomes != 0) && !p.hasPermission("homes.config_bypass")) {
                             ChatUtils.sendInfo(p, pl.config.getString("max-homes-msg"));
                             return true;
                         }
-                        //Check if the player already has a home with the name they gave us
+                        // 指定されたホーム名で既にホームが存在しているか確認
                         if (pl.getPlayersNamedHomes(uuid).containsKey(args[0])) {
-                            ChatUtils.sendError(p, "You already have a home with that name, try a different one!");
+                            ChatUtils.sendError(p, "その名前のホームは既に存在しています。別の名前を試してください！");
                             return true;
                         }
                     }
 
-                    // Cleanse the input argument of any non alphanumeric characters
+                    // 入力されたホーム名からアルファベットや数字以外の文字を除去
                     String homeName = args[0].replaceAll("[^a-zA-Z0-9]", "");
 
-                    // Ensure that after cleansing the homename still has a value
+                    // 除去後もホーム名が残っているか確認
                     if (homeName.length() > 0) {
-                        // Set the home name to the given name
+                        // 指定された名前でホーム名を設定
                         playersHome.setHomeName(homeName);
                     } else {
-                        ChatUtils.sendError(p, "Please use a valid home name! Only a-z & 0-9 characters are allowed.");
+                        ChatUtils.sendError(p, "有効なホーム名を使用してください！使用可能な文字は a-z & 0-9 です。");
                         return true;
                     }
 
-
-                    //Build the description as a combination of all other arguments passed
+                    // 他の引数を結合して説明として設定
                     StringBuilder desc = new StringBuilder();
                     for (int i = 1; i <= args.length - 1; i++) {
                         desc.append(args[i]).append(" ");
@@ -100,13 +100,13 @@ public class SetHome implements CommandExecutor {
                         playersHome.setDesc(desc.substring(0, desc.length() - 1));
                     }
 
-                    //Save the new home
+                    // 新しいホームを保存
                     pl.saveNamedHome(uuid, playersHome);
 
-                    ChatUtils.sendSuccess(p, "Your home '" + playersHome.getHomeName() + "' has been set!");
+                    ChatUtils.sendSuccess(p, "ホーム '" + playersHome.getHomeName() + "' が設定されました！");
                     return true;
                 }
-                //Send player message because they didn't have the proper permissions
+                // プレイヤーに適切な権限がないため、メッセージを送信
                 ChatUtils.permissionError(p);
             }
             return true;
@@ -115,20 +115,20 @@ public class SetHome implements CommandExecutor {
     }
 
     /**
-     * Gets the maximum homes allowed for a player. Will take the greatest value when player
-     * has multiple groups assigned to them
+     * プレイヤーに許可されている最大のホーム数を取得。
+     * プレイヤーが複数のグループに所属している場合は最も高い値を使用
      *
-     * @param p, The player we're attempting to get the homes for
-     * @return maximum number of homes allowed for that player
+     * @param p ホーム数を取得したいプレイヤー
+     * @return プレイヤーに許可されている最大ホーム数
      */
     private int getMaxHomesAllowed(Player p) {
         int maxHomes = 0;
 
-        // Check to see if permissions are enabled
+        // 権限が有効か確認
         if (permissions) {
-            // First try luck perms
+            // 最初に LuckPerms を試す
             if (luckPerms != null) {
-                // Loop over groups found in config list
+                // 設定リストのグループをループ
                 for (String group : maxHomesList.keySet()) {
                     if (p.hasPermission("group." + group)) {
                         int max_home_val = maxHomesList.get(group);
@@ -138,7 +138,8 @@ public class SetHome implements CommandExecutor {
                     }
                 }
             } else {
-                // Loop over groups found by Vault
+                // Vaultで見つかったグループをループ
+
                 for (String group : vaultPerms.getPlayerGroups(p)) {
                     for (String g : maxHomesList.keySet()) {
                         if (group.equalsIgnoreCase(g)) {
