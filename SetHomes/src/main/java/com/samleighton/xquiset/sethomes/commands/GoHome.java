@@ -33,332 +33,331 @@ public class GoHome implements CommandExecutor, Listener {
         pl.getServer().getPluginManager().registerEvents(this, pl);
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        //Make sure the sender of the command is a player
-        if (!(sender instanceof Player)) {
-            //Sends message to sender of command that they're not a player
-            ChatUtils.notPlayerError(sender);
-            return false;
-        }
-
-        p = (Player) sender;
-        if (cmd.getName().equalsIgnoreCase("home")) {
-            if (isTeleporting()) {
-                ChatUtils.sendError(p, "You may not use this command while teleporting!");
-                return true;
-            }
-
-            final String uuid = p.getUniqueId().toString();
-
-            //If cooldown is active in config then check to see if player is in cooldown list
-            if (!(cooldownList.containsKey(uuid)) || cooldown <= 0 || p.hasPermission("homes.config_bypass")) {
-                //Player was not in cooldown list so try and teleport then
-                //Teleport was successful so we return true
-                return teleportHome(p, uuid, args);
-                //Teleport failed
-            } else {
-                //Player was found in cooldown list
-                //Calculate the amount of time left before they can run the command again
-                long timeLeft = ((cooldownList.get(uuid) / 1000) + cooldown) - (System.currentTimeMillis() / 1000);
-                //The player has not passed the amount of time needed
-                if (timeLeft > 0) {
-                    //Tell the player they need to wait still
-                    ChatUtils.sendInfo(p, StringUtils.replace(pl.getConfig().getString("tp-cooldown-msg"), "%s", String.valueOf(timeLeft)));
-                    return true;
-                } else {
-                    //The player has waited long enough so we remove them from the list and try to teleport them
-                    cooldownList.remove(uuid);
-                    if (teleportHome(p, uuid, args)) {
-                        //The player was successfully teleported
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if (cmd.getName().equalsIgnoreCase("home-of")) {
-            if (!p.hasPermission("homes.home-of")) {
-                ChatUtils.permissionError(p);
-                return false;
-            }
-
-            if (isTeleporting()) {
-                ChatUtils.sendError(p, "You may not use this command while teleporting!");
-                return true;
-            }
-
-            if (args.length < 1 || args.length > 2) {
-                ChatUtils.sendError(p, "ERROR: Incorrect number of arguments!");
-                return false;
-            }
-
-            //Get current players location
-            locale = p.getLocation();
-            //Create offline player for their target player
-            @SuppressWarnings({"deprecated"})
-            OfflinePlayer targetP = Bukkit.getServer().getOfflinePlayer(args[0]);
-
-            //Check to make sure the offline player has player on the server before
-            if (!targetP.hasPlayedBefore()) {
-                ChatUtils.sendError(p, "The player " + ChatColor.WHITE + ChatColor.BOLD + args[0] + ChatColor.DARK_RED + " has never played before!");
-                return false;
-            }
-
-            //Store the offline players uuid as a string
-            String uuid = targetP.getUniqueId().toString();
-            //Attempt to teleport the player to the other players home
-            return teleportHomeOf(p, uuid, args);
-        }
+public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    //コマンド送信者がプレイヤーであることを確認
+    if (!(sender instanceof Player)) {
+        //コマンド送信者に対してプレイヤーではないことを通知
+        ChatUtils.notPlayerError(sender);
         return false;
     }
 
-    /**
-     * @param p    The player we are trying to teleport
-     * @param args the arguments the player passed via command
-     * @return true on successful teleport, false otherwise
-     */
-    private boolean teleportHome(final Player p, final String uuid, String[] args) {
-        //The players location upon command execution
-        locale = p.getLocation();
-        if (args.length < 1) {
-            //If they have no home tell them
-            if (!(pl.hasUnknownHomes(uuid))) {
-                ChatUtils.sendError(p, "You have no Default Home!");
-                return false;
-            } else {
-                //Teleport the player to their home and send them a message telling them so
-                if (pl.getConfig().getInt("tp-delay") > 0 && !p.hasPermission("homes.config_bypass")) {
-                    //Run a timer to countdown the amount of time for tp delay and display a message on the users screen
-                    taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(pl, new Runnable() {
-                        int delay = pl.getConfig().getInt("tp-delay");
+    p = (Player) sender;
+    if (cmd.getName().equalsIgnoreCase("home")) {
+        if (isTeleporting()) {
+            ChatUtils.sendError(p, "テレポート中はこのコマンドを使用できません!");
+            return true;
+        }
 
-                        public void run() {
-                            if (delay == 0) {
-                                //Cancel this repeating task
-                                pl.cancelTask(taskId);
-                                //Teleport the player to their home
-                                p.teleport(pl.getPlayersUnnamedHome(uuid));
-                                //Spawn particles at players feet after teleport
-                                p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                                //Play note on teleport
-                                p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                                //Add player to cooldown list
-                                cooldownList.put(uuid, System.currentTimeMillis());
-                            } else {
-                                //Send title to player every second
-                                p.sendTitle(ChatColor.GOLD + "Teleporting in " + delay + "...", null, 0, 20, 0);
-                                //Play note every second
-                                p.playNote(p.getLocation(), Instrument.DIDGERIDOO, Note.sharp(2, Note.Tone.F));
-                                //Decrement time left by 1 every second
-                                delay--;
-                            }
-                        }
-                    }, 0L, 20L);
-                } else {
-                    //tp delay was not active in config so we teleport without starting repeating task
-                    p.teleport(pl.getPlayersUnnamedHome(uuid));
-                    //Spawn particles at players feet after teleport
-                    p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                    //Player note on teleport
-                    p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                    //Notify player of successful teleport
-                    ChatUtils.sendSuccess(p, "You have been teleported home!");
-                    //Add player to cooldown list
-                    cooldownList.put(uuid, System.currentTimeMillis());
-                }
+        final String uuid = p.getUniqueId().toString();
+
+        //クールダウンが設定で有効の場合、プレイヤーがクールダウンリストにあるか確認
+        if (!(cooldownList.containsKey(uuid)) || cooldown <= 0 || p.hasPermission("homes.config_bypass")) {
+            //プレイヤーがクールダウンリストにいないので、テレポートを試みる
+            //テレポートが成功したのでtrueを返す
+            return teleportHome(p, uuid, args);
+            //テレポート失敗
+        } else {
+            //プレイヤーがクールダウンリストにいる
+            //再度コマンドを実行できるまでの残り時間を計算
+            long timeLeft = ((cooldownList.get(uuid) / 1000) + cooldown) - (System.currentTimeMillis() / 1000);
+            //プレイヤーが必要な時間を経過していない
+            if (timeLeft > 0) {
+                //プレイヤーに待つ必要があることを通知
+                ChatUtils.sendInfo(p, StringUtils.replace(pl.getConfig().getString("tp-cooldown-msg"), "%s", String.valueOf(timeLeft)));
                 return true;
+            } else {
+                //プレイヤーが十分に待ったのでリストから削除し、テレポートを試みる
+                cooldownList.remove(uuid);
+                if (teleportHome(p, uuid, args)) {
+                    //プレイヤーが正常にテレポートした
+                    return true;
+                }
             }
-        } else if (args.length > 1) {
-            //Tell the player if they've sent to many arguments with the command
-            ChatUtils.tooManyArgs(p);
+        }
+    }
+
+    if (cmd.getName().equalsIgnoreCase("home-of")) {
+        if (!p.hasPermission("homes.home-of")) {
+            ChatUtils.permissionError(p);
+            return false;
+        }
+
+        if (isTeleporting()) {
+            ChatUtils.sendError(p, "テレポート中はこのコマンドを使用できません!");
+            return true;
+        }
+
+        if (args.length < 1 || args.length > 2) {
+            ChatUtils.sendError(p, "エラー: 引数の数が正しくありません!");
+            return false;
+        }
+
+        //現在のプレイヤーの位置を取得
+        locale = p.getLocation();
+        //ターゲットプレイヤーのオフラインプレイヤーを作成
+        @SuppressWarnings({"deprecated"})
+        OfflinePlayer targetP = Bukkit.getServer().getOfflinePlayer(args[0]);
+
+        //オフラインプレイヤーが以前にサーバーでプレイしたか確認
+        if (!targetP.hasPlayedBefore()) {
+            ChatUtils.sendError(p, "プレイヤー " + ChatColor.WHITE + ChatColor.BOLD + args[0] + ChatColor.DARK_RED + " はこれまでにプレイしたことがありません!");
+            return false;
+        }
+
+        //オフラインプレイヤーのUUIDを文字列として保存
+        String uuid = targetP.getUniqueId().toString();
+        //他のプレイヤーのホームにプレイヤーをテレポートしようとする
+        return teleportHomeOf(p, uuid, args);
+    }
+    return false;
+}
+
+/**
+ * @param p    テレポートしようとしているプレイヤー
+ * @param args プレイヤーがコマンドで渡した引数
+ * @return テレポートが成功した場合はtrue、それ以外はfalse
+ */
+private boolean teleportHome(final Player p, final String uuid, String[] args) {
+    //コマンド実行時のプレイヤーの位置
+    locale = p.getLocation();
+    if (args.length < 1) {
+        //ホームがない場合、プレイヤーに通知
+        if (!(pl.hasUnknownHomes(uuid))) {
+            ChatUtils.sendError(p, "デフォルトのホームがありません!");
             return false;
         } else {
-            //Check if they have any named homes or a home with the given name
-            if (!(pl.hasNamedHomes(uuid)) || !(pl.getPlayersNamedHomes(uuid).containsKey(args[0]))) {
-                ChatUtils.sendError(p, "You have no homes by that name!");
-                return false;
-            }
-            final String homeName = args[0];
-            //Teleport the player to there home and send them a message telling them so
+            //プレイヤーをホームにテレポートし、通知を表示
             if (pl.getConfig().getInt("tp-delay") > 0 && !p.hasPermission("homes.config_bypass")) {
-                //Run a timer to countdown the amount of time for tp delay and display a message on the users screen
+                //テレポート遅延時間をカウントダウンし、ユーザーの画面にメッセージを表示するタイマーを実行
                 taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(pl, new Runnable() {
                     int delay = pl.getConfig().getInt("tp-delay");
 
                     public void run() {
                         if (delay == 0) {
+                            //この繰り返しタスクをキャンセル
                             pl.cancelTask(taskId);
-                            //Teleport the player to their home
-                            p.teleport(pl.getNamedHomeLocal(uuid, homeName));
-                            //Spawn particles at players feet after teleport
+                            //プレイヤーをホームにテレポート
+                            p.teleport(pl.getPlayersUnnamedHome(uuid));
+                            //テレポート後にプレイヤーの足元にパーティクルを表示
                             p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                            //Play note on teleport
+                            //テレポート時に音を再生
                             p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                            //Add player to cooldown list
+                            //プレイヤーをクールダウンリストに追加
                             cooldownList.put(uuid, System.currentTimeMillis());
                         } else {
-                            //Send title every second
-                            p.sendTitle(ChatColor.GOLD + "Teleporting in " + delay + "...", null, 5, 5, 5);
-                            //Play note every second
+                            //プレイヤーに毎秒タイトルを送信
+                            p.sendTitle(ChatColor.GOLD + "テレポートまで " + delay + "...", null, 0, 20, 0);
+                            //毎秒音を再生
                             p.playNote(p.getLocation(), Instrument.DIDGERIDOO, Note.sharp(2, Note.Tone.F));
-                            //Decrement the time left
+                            //残り時間を1秒ずつ減少
                             delay--;
                         }
                     }
                 }, 0L, 20L);
             } else {
-                //Teleport the player to their home
-                p.teleport(pl.getNamedHomeLocal(uuid, args[0]));
-                //Spawn particles at players feet after teleport
+                //設定でテレポート遅延が無効なため、繰り返しタスクを開始せずにテレポート
+                p.teleport(pl.getPlayersUnnamedHome(uuid));
+                //テレポート後にプレイヤーの足元にパーティクルを表示
                 p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                //Play note on teleport
+                //テレポート時に音を再生
                 p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                //Tell the player they've teleported
-                ChatUtils.sendSuccess(p, "You have been teleported home!");
-                //Add player to cooldown list
+                //テレポート成功を通知
+                ChatUtils.sendSuccess(p, "ホームにテレポートしました!");
+                //プレイヤーをクールダウンリストに追加
                 cooldownList.put(uuid, System.currentTimeMillis());
             }
             return true;
         }
-    }
+    } else if (args.length > 1) {
+        //コマンドに引数が多すぎる場合にプレイヤーに通知
+        ChatUtils.tooManyArgs(p);
+        return false;
+    } else {
+        //指定された名前のホームがあるか確認
+        if (!(pl.hasNamedHomes(uuid)) || !(pl.getPlayersNamedHomes(uuid).containsKey(args[0]))) {
+            ChatUtils.sendError(p, "その名前のホームはありません!");
+            return false;
+        }
+        final String homeName = args[0];
+        //プレイヤーをホームにテレポートし、通知を表示
+        if (pl.getConfig().getInt("tp-delay") > 0 && !p.hasPermission("homes.config_bypass")) {
+            //テレポート遅延時間をカウントダウンし、ユーザーの画面にメッセージを表示するタイマーを実行
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(pl, new Runnable() {
+                int delay = pl.getConfig().getInt("tp-delay");
 
-    /**
-     * @param p    The player you are trying to teleport
-     * @param uuid the unique id string of the player they are trying to get homes of
-     * @param args the arguments the player passed via command
-     * @return true on successful teleport false in all other cases
-     */
-    private boolean teleportHomeOf(final Player p, final String uuid, String[] args) {
-        locale = p.getLocation();
-        //Only one argument passed so we are searching for a default home
-        if (args.length == 1) {
-            //Check to make sure
-            if (!pl.hasUnknownHomes(uuid)) {
-                ChatUtils.sendError(p, "The player " + ChatColor.WHITE + ChatColor.BOLD + args[0] + ChatColor.DARK_RED + " has no default home set!");
-                return false;
-            } else {
-                //Teleport the player to the home and send them a message telling them so
-                if (pl.getConfig().getInt("tp-delay") > 0 && !p.hasPermission("homes.config_bypass")) {
-                    //Run a timer to countdown the amount of time for tp delay and display a message on the users screen
-                    taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(pl, new Runnable() {
-                        int delay = pl.getConfig().getInt("tp-delay");
-
-                        public void run() {
-                            if (delay == 0) {
-                                //Cancel this repeating task
-                                pl.cancelTask(taskId);
-                                //Teleport the player to their home
-                                p.teleport(pl.getPlayersUnnamedHome(uuid));
-                                //Spawn particles at players feet after teleport
-                                p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                                //Play note on teleport
-                                p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                                //Add player to cooldown list
-                                cooldownList.put(p.getUniqueId().toString(), System.currentTimeMillis());
-                            } else {
-                                //Send title every second
-                                p.sendTitle(ChatColor.GOLD + "Teleporting in " + delay + "...", null, 0, 20, 0);
-                                //Play note every second
-                                p.playNote(p.getLocation(), Instrument.DIDGERIDOO, Note.sharp(2, Note.Tone.F));
-                                //Decrement time left by 1
-                                delay--;
-                            }
-                        }
-                    }, 0L, 20L);
-                } else {
-                    //tp delay was not active in config so we teleport without starting repeating task
-                    p.teleport(pl.getPlayersUnnamedHome(uuid));
-                    //Spawn particles at players feet after teleport
-                    p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                    //Play note on teleport
-                    p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                    //Notify player of successful teleport
-                    ChatUtils.sendSuccess(p, "You have been teleported!");
-                    //Add player to cooldown list
-                    cooldownList.put(p.getUniqueId().toString(), System.currentTimeMillis());
+                public void run() {
+                    if (delay == 0) {
+                        pl.cancelTask(taskId);
+                        //プレイヤーをホームにテレポート
+                        p.teleport(pl.getNamedHomeLocal(uuid, homeName));
+                        //テレポート後にプレイヤーの足元にパーティクルを表示
+                        p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
+                        //テレポート時に音を再生
+                        p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
+                        //プレイヤーをクールダウンリストに追加
+                        cooldownList.put(uuid, System.currentTimeMillis());
+                    } else {
+                        //毎秒プレイヤーにタイトルを送信
+                        p.sendTitle(ChatColor.GOLD + "テレポートまで " + delay + "...", null, 5, 5, 5);
+                        //毎秒音を再生
+                        p.playNote(p.getLocation(), Instrument.DIDGERIDOO, Note.sharp(2, Note.Tone.F));
+                        //残り時間を減少
+                        delay--;
+                    }
                 }
-                return true;
-            }
+            }, 0L, 20L);
         } else {
-            final String homeName = args[1];
-            if (!(pl.hasNamedHomes(uuid)) || !(pl.getPlayersNamedHomes(uuid).containsKey(homeName))) {
-                ChatUtils.sendError(p, "That user has no homes by that name!");
-                return false;
-            }
+            //テレポート遅延が無効なため、即座にテレポート
+            p.teleport(pl.getNamedHomeLocal(uuid, homeName));
+            //テレポート後にプレイヤーの足元にパーティクルを表示
+            p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
+            //テレポート時に音を再生
+            p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
+            //テレポート成功を通知
+            ChatUtils.sendSuccess(p, "ホーム '" + homeName + "' にテレポートしました!");
+            //プレイヤーをクールダウンリストに追加
+            cooldownList.put(uuid, System.currentTimeMillis());
+        }
+        return true;
+    }
+}
 
-            //Teleport the player to there home and send them a message telling them so
+/**
+ * @param p    テレポートしようとしているプレイヤー
+ * @param uuid テレポート先のホームを持つプレイヤーのUUID
+ * @param args プレイヤーがコマンドで渡した引数
+ * @return テレポートが成功した場合はtrue、それ以外はfalse
+ */
+private boolean teleportHomeOf(final Player p, final String uuid, String[] args) {
+    locale = p.getLocation();
+    // 引数が1つだけ渡された場合、デフォルトのホームを検索
+    if (args.length == 1) {
+        // デフォルトのホームがあるか確認
+        if (!pl.hasUnknownHomes(uuid)) {
+            ChatUtils.sendError(p, "プレイヤー " + ChatColor.WHITE + ChatColor.BOLD + args[0] + ChatColor.DARK_RED + " はデフォルトのホームを設定していません!");
+            return false;
+        } else {
+            // プレイヤーをホームにテレポートし、通知を表示
             if (pl.getConfig().getInt("tp-delay") > 0 && !p.hasPermission("homes.config_bypass")) {
-                //Run a timer to countdown the amount of time for tp delay and display a message on the users screen
+                // テレポート遅延時間をカウントダウンし、ユーザーの画面にメッセージを表示するタイマーを実行
                 taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(pl, new Runnable() {
                     int delay = pl.getConfig().getInt("tp-delay");
 
                     public void run() {
                         if (delay == 0) {
+                            // この繰り返しタスクをキャンセル
                             pl.cancelTask(taskId);
-                            //Teleport the player to their home
-                            p.teleport(pl.getNamedHomeLocal(uuid, homeName));
-                            //Spawn particles at players feet after teleport
+                            // プレイヤーをホームにテレポート
+                            p.teleport(pl.getPlayersUnnamedHome(uuid));
+                            // テレポート後にプレイヤーの足元にパーティクルを表示
                             p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                            //Play note on teleport
+                            // テレポート時に音を再生
                             p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                            //Add player to cooldown list
+                            // プレイヤーをクールダウンリストに追加
                             cooldownList.put(p.getUniqueId().toString(), System.currentTimeMillis());
                         } else {
-                            //Send the player a title every second
-                            p.sendTitle(ChatColor.GOLD + "Teleporting in " + delay + "...", null, 5, 5, 5);
-                            //Play note every second
+                            // 毎秒タイトルを送信
+                            p.sendTitle(ChatColor.GOLD + "テレポートまで " + delay + "...", null, 0, 20, 0);
+                            // 毎秒音を再生
                             p.playNote(p.getLocation(), Instrument.DIDGERIDOO, Note.sharp(2, Note.Tone.F));
-                            //Decrement time left by 1 every second
+                            // 残り時間を1秒減少
                             delay--;
                         }
                     }
                 }, 0L, 20L);
             } else {
-                //Teleport the player to their home
-                p.teleport(pl.getNamedHomeLocal(uuid, args[1]));
-                //Spawn particles at players feet after teleport
+                // 設定でテレポート遅延が無効なため、繰り返しタスクを開始せずにテレポート
+                p.teleport(pl.getPlayersUnnamedHome(uuid));
+                // テレポート後にプレイヤーの足元にパーティクルを表示
                 p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
-                //Play note on teleport
+                // テレポート時に音を再生
                 p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
-                //Notify player of successful teleport
-                ChatUtils.sendSuccess(p, "You have been teleported!");
-                //Add player to cooldown list
+                // テレポート成功を通知
+                ChatUtils.sendSuccess(p, "テレポートしました!");
+                // プレイヤーをクールダウンリストに追加
                 cooldownList.put(p.getUniqueId().toString(), System.currentTimeMillis());
             }
+            return true;
         }
-        return true;
-    }
-
-    public boolean isTeleporting() {
-        //Loop through all running/pending tasks
-        for (BukkitTask t : Bukkit.getScheduler().getPendingTasks()) {
-            //Attempt to find our taskId in the list
-            if (t.getTaskId() == taskId) {
-                //Task id was found return true
-                return true;
-            }
+    } else {
+        final String homeName = args[1];
+        if (!(pl.hasNamedHomes(uuid)) || !(pl.getPlayersNamedHomes(uuid).containsKey(homeName))) {
+            ChatUtils.sendError(p, "その名前のホームはありません!");
+            return false;
         }
-        //No taskId found return false
-        return false;
-    }
 
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
-        //Make sure the player triggering the move event is the player currently trying to teleport
-        if (e.getPlayer() == p) {
-            //Get the running delay task that was created for the player
-            if (isTeleporting()) {
-                //Check to make sure the player moved from the location that they started the teleport at
-                if (e.getPlayer().getLocation().getX() != locale.getX() || e.getPlayer().getLocation().getY() != locale.getY()) {
-                    //Check our config var to see if we continue with canceling the task or if the player has bypass permissions
-                    if (cancelOnMove && !e.getPlayer().hasPermission("homes.config_bypass")) {
-                        //cancel the task
+        // プレイヤーをホームにテレポートし、通知を表示
+        if (pl.getConfig().getInt("tp-delay") > 0 && !p.hasPermission("homes.config_bypass")) {
+            // テレポート遅延時間をカウントダウンし、ユーザーの画面にメッセージを表示するタイマーを実行
+            taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(pl, new Runnable() {
+                int delay = pl.getConfig().getInt("tp-delay");
+
+                public void run() {
+                    if (delay == 0) {
                         pl.cancelTask(taskId);
-                        //Tell them the teleport has been canceled
-                        ChatUtils.sendInfo(e.getPlayer(), pl.getConfig().getString("tp-cancelOnMove-msg"));
-                        //Play a snare sound when the player moves during the teleport delay
-                        e.getPlayer().playNote(e.getPlayer().getLocation(), Instrument.SNARE_DRUM, Note.natural(0, Note.Tone.F));
+                        // プレイヤーをホームにテレポート
+                        p.teleport(pl.getNamedHomeLocal(uuid, homeName));
+                        // テレポート後にプレイヤーの足元にパーティクルを表示
+                        p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
+                        // テレポート時に音を再生
+                        p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
+                        // プレイヤーをクールダウンリストに追加
+                        cooldownList.put(p.getUniqueId().toString(), System.currentTimeMillis());
+                    } else {
+                        // 毎秒プレイヤーにタイトルを送信
+                        p.sendTitle(ChatColor.GOLD + "テレポートまで " + delay + "...", null, 5, 5, 5);
+                        // 毎秒音を再生
+                        p.playNote(p.getLocation(), Instrument.DIDGERIDOO, Note.sharp(2, Note.Tone.F));
+                        // 残り時間を減少
+                        delay--;
                     }
+                }
+            }, 0L, 20L);
+        } else {
+            // プレイヤーをホームにテレポート
+            p.teleport(pl.getNamedHomeLocal(uuid, args[1]));
+            // テレポート後にプレイヤーの足元にパーティクルを表示
+            p.spawnParticle(Particle.PORTAL, p.getLocation(), 100);
+            // テレポート時に音を再生
+            p.playNote(p.getLocation(), Instrument.BELL, Note.sharp(2, Note.Tone.F));
+            // テレポート成功を通知
+            ChatUtils.sendSuccess(p, "テレポートしました!");
+            // プレイヤーをクールダウンリストに追加
+            cooldownList.put(p.getUniqueId().toString(), System.currentTimeMillis());
+        }
+    }
+    return true;
+}
+
+public boolean isTeleporting() {
+    // 実行中/保留中のすべてのタスクをループ
+    for (BukkitTask t : Bukkit.getScheduler().getPendingTasks()) {
+        // リスト内のtaskIdを見つけようとする
+        if (t.getTaskId() == taskId) {
+            // タスクIDが見つかった場合はtrueを返す
+            return true;
+        }
+    }
+    // タスクIDが見つからなかった場合はfalseを返す
+    return false;
+}
+
+@EventHandler
+public void onPlayerMove(PlayerMoveEvent e) {
+    // 移動イベントをトリガーしているプレイヤーが現在テレポートしようとしているプレイヤーであることを確認
+    if (e.getPlayer() == p) {
+        // プレイヤーのために作成された実行中の遅延タスクを取得
+        if (isTeleporting()) {
+            // プレイヤーがテレポートを開始した位置から移動したかを確認
+            if (e.getPlayer().getLocation().getX() != locale.getX() || e.getPlayer().getLocation().getY() != locale.getY()) {
+                // configの変数を確認して、タスクのキャンセルを続けるか、プレイヤーにバイパス権限があるかを確認
+                if (cancelOnMove && !e.getPlayer().hasPermission("homes.config_bypass")) {
+                    // タスクをキャンセル
+                    pl.cancelTask(taskId);
+                    // テレポートがキャンセルされたことを通知
+                    ChatUtils.sendInfo(e.getPlayer(), pl.getConfig().getString("tp-cancelOnMove-msg"));
+                    // テレポート遅延中にプレイヤーが移動した場合にスネア音を再生
+                    e.getPlayer().playNote(e.getPlayer().getLocation(), Instrument.SNARE_DRUM, Note.natural(0, Note.Tone.F));
                 }
             }
         }
