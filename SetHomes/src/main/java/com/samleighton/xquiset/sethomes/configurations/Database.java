@@ -59,7 +59,7 @@ public class Database extends Config {
         try {
             getConfig().save(dbFile);
         } catch (Exception e) {
-            pl.getLogger().log(Level.SEVERE, ChatColor.DARK_RED + "Could not save config!", e);
+            pl.getLogger().log(Level.SEVERE, ChatColor.DARK_RED + "設定を保存できませんでした。", e);
         }
     }
 }
