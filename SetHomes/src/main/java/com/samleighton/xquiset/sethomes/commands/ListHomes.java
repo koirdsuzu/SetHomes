@@ -35,27 +35,25 @@ public class ListHomes implements CommandExecutor {
 
             if (args.length == 1) {
                 if (p.hasPermission("homes.gethomes")) {
-                    //Create a offline player for the name they passed
-                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
-                    //Check to make sure the player has actually joined the server
+// プレイヤーが実際にサーバーに参加していることを確認
                     if (offlinePlayer.hasPlayedBefore()) {
                         UUID uuid = offlinePlayer.getUniqueId();
                         listHomes(uuid, p);
                     } else {
-                        ChatUtils.sendError(p, "That user has never player here before!");
+                        ChatUtils.sendError(p, "そのプレイヤーはこのサーバーに参加したことがありません!");
                         return true;
                     }
                 } else {
-                    //Send player message because they didn't have the proper permissions
+                    // プレイヤーに適切な権限がないため、メッセージを送信
                     ChatUtils.permissionError(p);
                 }
                 return true;
             } else if (args.length == 0) {
-                //List the homes for the player who sent the command
+                // コマンドを送信したプレイヤーのホームをリスト表示
                 listHomes(p);
                 return true;
             } else {
-                //Tell the player if they've sent to many arguments with the command
+                // コマンドに引数が多すぎる場合、プレイヤーに通知
                 ChatUtils.tooManyArgs(p);
                 return false;
             }
@@ -64,26 +62,26 @@ public class ListHomes implements CommandExecutor {
     }
 
     /**
-     * Used to check if a player has named homes, and will also send the
-     * homes list if there are any homes.
+     * プレイヤーが名前付きのホームを持っているか確認し、
+     * ホームがあればリストを送信するために使用
      *
-     * @param p,    the player object to check homes for
-     * @param uuid, the uuid of the player object as a string
+     * @param p     ホームを確認するプレイヤーオブジェクト
+     * @param uuid  プレイヤーオブジェクトのUUID（文字列）
      */
     private void checkForNamedHomes(Player p, String uuid) {
         if (pl.hasNamedHomes(uuid)) {
-            //Print the home with its description to the player
+            // ホームとその説明をプレイヤーに表示
             for (String id : pl.getPlayersNamedHomes(uuid).keySet()) {
-                //Gets the name of the world the home has been set in
+                // ホームが設定されているワールドの名前を取得
                 String world = pl.getPlayersNamedHomes(uuid).get(id).getWorld();
-                //Gets the description for the home
+                // ホームの説明を取得
                 String desc = pl.getPlayersNamedHomes(uuid).get(id).getDesc();
                 if (desc != null) {
-                    //Send message with description
-                    p.sendMessage(ChatColor.DARK_AQUA + "Name: " + ChatColor.WHITE + id + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "World: " + ChatColor.WHITE + world + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "Desc: " + ChatColor.WHITE + desc);
+                    // 説明付きメッセージを送信
+                    p.sendMessage(ChatColor.DARK_AQUA + "名前: " + ChatColor.WHITE + id + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "ワールド: " + ChatColor.WHITE + world + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "説明: " + ChatColor.WHITE + desc);
                 } else {
-                    //Send message without description
-                    p.sendMessage(ChatColor.DARK_AQUA + "Name: " + ChatColor.WHITE + id + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "World: " + ChatColor.WHITE + world);
+                    // 説明なしメッセージを送信
+                    p.sendMessage(ChatColor.DARK_AQUA + "名前: " + ChatColor.WHITE + id + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "ワールド: " + ChatColor.WHITE + world);
                 }
             }
         }
@@ -91,51 +89,50 @@ public class ListHomes implements CommandExecutor {
     }
 
     /**
-     * Used to generate a list of homes for the commend sender.
-     * Will also print the list to the player in a nice format
+     * コマンド送信者のホームリストを生成し、フォーマットして表示
      *
-     * @param p, the player sending the command
+     * @param p コマンドを送信するプレイヤー
      */
     private void listHomes(Player p) {
-        //The uuid string of the player p
+        // プレイヤーpのUUID文字列
         String uuid = p.getUniqueId().toString();
 
-        //Begin listing homes for the player
-        p.sendMessage(ChatColor.BOLD + "Your Currently Set Homes");
+        // プレイヤーのホームリストを表示開始
+        p.sendMessage(ChatColor.BOLD + "現在設定されているホーム");
         p.sendMessage(filler);
 
-        //Tell the player if they have a default home set or not
+        // デフォルトのホームが設定されているかをプレイヤーに伝える
         if (pl.hasUnknownHomes(uuid)) {
-            //Gets the name of the world the home has been set in
+            // ホームが設定されているワールドの名前を取得
             String world = pl.getPlayersUnnamedHome(uuid).getWorld().getName();
-            p.sendMessage(ChatColor.GOLD + "Default Home" + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "World: " + ChatColor.WHITE + world);
+            p.sendMessage(ChatColor.GOLD + "デフォルトホーム" + ChatColor.DARK_GRAY + " | " + ChatColor.DARK_AQUA + "ワールド: " + ChatColor.WHITE + world);
         }
 
-        //Check to make sure the player has homes
+        // プレイヤーがホームを持っているか確認
         checkForNamedHomes(p, uuid);
     }
 
     /**
-     * Used to generate a list of homes of another player
-     * for the command sender. Typically used by admins
+     * 別のプレイヤーのホームリストを生成し、コマンド送信者に表示
+     * 通常は管理者が使用
      *
-     * @param playerUUID, the UUID of the player who's homes we're trying to retrieve
-     * @param sender,     the sender of the command to print the list to
+     * @param playerUUID ホームリストを取得するプレイヤーのUUID
+     * @param sender     コマンドリストを表示する送信者
      */
     private void listHomes(UUID playerUUID, Player sender) {
         String uuid = playerUUID.toString();
 
-        sender.sendMessage(ChatColor.BOLD + "Homes currently set for the player - " + Bukkit.getOfflinePlayer(playerUUID).getName());
+        sender.sendMessage(ChatColor.BOLD + "現在設定されているプレイヤーのホーム - " + Bukkit.getOfflinePlayer(playerUUID).getName());
         sender.sendMessage(filler);
 
-        //Tell the player if they have a default home set or not
+        // デフォルトのホームが設定されているかを伝える
         if (pl.hasUnknownHomes(uuid)) {
-            //Gets the name of the world the home has been set in
+            // ホームが設定されているワールドの名前を取得
             String world = pl.getPlayersUnnamedHome(uuid).getWorld().getName();
-            sender.sendMessage(ChatColor.GOLD + "Default Home - World: " + world);
+            sender.sendMessage(ChatColor.GOLD + "デフォルトホーム - ワールド: " + world);
         }
 
-        //Check to make sure the player has homes
+        // プレイヤーがホームを持っているか確認
         checkForNamedHomes(sender, uuid);
     }
 
