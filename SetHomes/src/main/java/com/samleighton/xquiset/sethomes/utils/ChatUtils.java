@@ -7,9 +7,9 @@ import org.bukkit.entity.Player;
 
 public class ChatUtils {
     /**
-     * Used to broadcast a message to the entire server
+     * サーバー全体にメッセージを送信するために使用します
      *
-     * @param msg, The message to broadcast
+     * @param msg, 送信するメッセージ
      */
     public static void broadcastMessage(String msg) {
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -18,59 +18,58 @@ public class ChatUtils {
     }
 
     /**
-     * Used to send a 'info' formatted message to a command sender
+     * コマンド送信者に「情報」形式のメッセージを送信するために使用します
      *
-     * @param s,   The CommandSender object
-     * @param msg, The message to send
+     * @param s,   CommandSenderオブジェクト
+     * @param msg, 送信するメッセージ
      */
     public static void sendInfo(CommandSender s, String msg) {
         s.sendMessage(ChatColor.WHITE + msg);
     }
 
     /**
-     * Used to send a 'error' formatted message to a command sender
+     * コマンド送信者に「エラー」形式のメッセージを送信するために使用します
      *
-     * @param s,   The CommandSender object
-     * @param msg, The message to send
+     * @param s,   CommandSenderオブジェクト
+     * @param msg, 送信するメッセージ
      */
     public static void sendError(CommandSender s, String msg) {
         s.sendMessage(ChatColor.DARK_RED + msg);
     }
 
     /**
-     * Used to send a 'success' formatted message to a command sender
+     * コマンド送信者に「成功」形式のメッセージを送信するために使用します
      *
-     * @param s,   The CommandSender object
-     * @param msg, The message to send
+     * @param s,   CommandSenderオブジェクト
+     * @param msg, 送信するメッセージ
      */
     public static void sendSuccess(CommandSender s, String msg) {
         s.sendMessage(ChatColor.GOLD + msg);
     }
 
     /**
-     * Used to send a not player error message to a command sender
+     * コマンド送信者に「プレイヤーではない」エラーメッセージを送信するために使用します
      *
-     * @param s, The CommandSender object
+     * @param s, CommandSenderオブジェクト
      */
     public static void notPlayerError(CommandSender s) {
-        s.sendMessage(ChatColor.DARK_RED + "You must be a player to use this command!");
+        s.sendMessage(ChatColor.DARK_RED + "このコマンドを使用するにはプレイヤーである必要があります！");
     }
 
     /**
-     * Used to send a permissions error message to a command sender
+     * コマンド送信者に「権限がない」エラーメッセージを送信するために使用します
      *
-     * @param s, The CommandSender object
+     * @param s, CommandSenderオブジェクト
      */
     public static void permissionError(CommandSender s) {
-        sendError(s, "You dont have permission to do that!");
+        sendError(s, "その操作を行う権限がありません！");
     }
 
     /**
-     * Used to send a to many arguments error message to a command sender
+     * コマンド送信者に「引数が多すぎる」エラーメッセージを送信するために使用します
      *
-     * @param s, The CommandSender object
+     * @param s, CommandSenderオブジェクト
      */
     public static void tooManyArgs(CommandSender s) {
-        sendError(s, "ERROR: Too many arguments!");
+        sendError(s, "エラー: 引数が多すぎます！");
     }
-}
